@@ -1,0 +1,37 @@
+# Local configuration and secrets
+/www/config.php
+/install-secret.php
+/install-secret-*.php
+/install-secret.php.complete
+/install-secret-*.php.complete
+/install-secret*.php
+!/install-secret.sample.php
+/install-secret*.complete
+/install-secret*.php.*
+/.cool-rooms-config-*
+.env
+.env.*
+!.env.example
+/www/config.php.*
+/www/config*.bak
+
+# Runtime data
+/www/.runtime/
+*.sql
+*.sql.gz
+*.sql.zip
+/www/logs/*
+!/www/logs/.gitkeep
+
+# Administrator-uploaded branding
+/www/assets/branding/*
+!/www/assets/branding/.gitkeep
+
+# Operating-system and editor files
+.DS_Store
+**/.DS_Store
+._*
+__MACOSX/
+Thumbs.db
+.idea/
+.vscode/

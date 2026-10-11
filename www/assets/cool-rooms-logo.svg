@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">COOL Rooms</title>
+  <desc id="desc">Raum-Markierung als neutrales Logo der COOL-Rooms-App</desc>
+  <rect width="128" height="128" rx="26" fill="#478E4F"/>
+  <circle cx="25" cy="24" r="15" fill="#91A17C" opacity=".72"/>
+  <circle cx="103" cy="27" r="19" fill="#79B486" opacity=".62"/>
+  <ellipse cx="64" cy="106" rx="47" ry="15" fill="#72AA7D" opacity=".58"/>
+  <path d="M64 22c-22 0-40 17.5-40 39.3 0 28.6 40 61.7 40 61.7s40-33.1 40-61.7C104 39.5 86 22 64 22Z" fill="#fff"/>
+  <path d="M43 75V49h43v33H60" fill="none" stroke="#2F6F3A" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M43 82h12" fill="none" stroke="#2F6F3A" stroke-width="8" stroke-linecap="round"/>
+  <path d="M64 49v18" fill="none" stroke="#2F6F3A" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="75" cy="68" r="6" fill="#F7A1A5"/>
+</svg>

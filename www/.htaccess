@@ -1,0 +1,11 @@
+# Optional security hardening (may depend on hosting)
+<IfModule mod_rewrite.c>
+RewriteEngine On
+</IfModule>
+
+# Prevent direct access to internals (if allowed by host)
+<IfModule mod_authz_core.c>
+  <FilesMatch "^(config\.php|config\.sample\.php)$">
+    Require all denied
+  </FilesMatch>
+</IfModule>

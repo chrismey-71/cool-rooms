@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="de-AT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>COOL Rooms | Raumorganisation für Schulen</title>
+  <meta name="description" content="COOL Rooms: freie Raumorganisation für Schulen. Schnelle Raumwahl, Klassenübersicht, Lehrkräftestandorte und Kioskmodus. Funktionen, Screenshots und Installation.">
+  <meta name="theme-color" content="#2f5f4a">
+  <meta property="og:title" content="COOL Rooms · Räume wählen. Klassen im Blick behalten.">
+  <meta property="og:description" content="Open-Source-Raumorganisation für Schulen mit Schüler:innen-, Lehrkräfte- und Administrationsbereich. Entdecke Funktionen und echte App-Einblicke mit fiktiven Daten.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://chrismey-71.github.io/cool-rooms/">
+  <meta property="og:image" content="https://chrismey-71.github.io/cool-rooms/screenshots/01-raumwahl.jpg">
+  <meta property="og:image:alt" content="Raumwahl in COOL Rooms mit farblich gruppierten Räumen und fiktiven Beispieldaten">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://chrismey-71.github.io/cool-rooms/">
+  <link rel="icon" type="image/svg+xml" href="assets/cool-rooms-logo.svg">
+  <link rel="stylesheet" href="assets/site.css">
+  <script defer src="assets/site.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#inhalt">Zum Inhalt</a>
+  <header class="topbar">
+    <div class="page nav">
+      <a class="brand" href="#start" aria-label="COOL Rooms, zum Anfang">
+        <img src="assets/cool-rooms-logo.svg" width="38" height="38" alt="">
+        <span>COOL Rooms</span>
+      </a>
+      <nav class="nav-links" aria-label="Hauptnavigation">
+        <a href="#umfang">Funktionen</a>
+        <a href="#einblicke">Einblicke</a>
+        <a href="#kiosk">Kiosk</a>
+        <a href="#handbuch">Handbuch</a>
+        <a href="#betrieb">Eigenbetrieb</a>
+        <a href="https://github.com/chrismey-71/cool-rooms">GitHub <span aria-hidden="true">↗</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="inhalt" class="page">
+    <section class="intro" id="start" aria-labelledby="intro-title">
+      <div class="intro-copy">
+        <p class="kicker">Open-Source-Webanwendung für Schulen</p>
+        <h1 id="intro-title">Räume wählen.<br>Klassen im Blick behalten.</h1>
+        <p class="lead">COOL Rooms unterstützt die Raumorganisation am COOL-Tag: Schüler:innen wählen ihren Raum, Lehrkräfte geben ihren Standort bekannt und behalten ihre Klasse im Blick. Die Administration hält Räume, Klassen und Zugänge zusammen.</p>
+        <div class="actions">
+          <a class="button primary" href="https://github.com/chrismey-71/cool-rooms/archive/refs/heads/main.zip">Projekt herunterladen <span aria-hidden="true">↓</span></a>
+          <a class="button" href="#einblicke">App-Einblicke ansehen</a>
+          <a class="text-link" href="https://github.com/chrismey-71/cool-rooms">Quellcode auf GitHub <span aria-hidden="true">↗</span></a>
+        </div>
+        <p class="version-note"><span class="status-dot" aria-hidden="true"></span>Version 1.21 <span aria-hidden="true">·</span> MIT-Lizenz <span aria-hidden="true">·</span> Selbst betreibbar</p>
+      </div>
+      <aside class="facts" aria-labelledby="facts-title">
+        <h2 id="facts-title">Projektkurzprofil</h2>
+        <dl>
+          <dt>Zielgruppe</dt><dd>Schüler:innen, Lehrkräfte und Schuladministration</dd>
+          <dt>Schwerpunkt</dt><dd>Raumwahl und Klassenübersicht am COOL-Tag</dd>
+          <dt>Technik</dt><dd>PHP 8+ · MySQL / MariaDB · SSE</dd>
+          <dt>Geräte</dt><dd>Computer, Tablet und Smartphone</dd>
+          <dt>Lizenz</dt><dd><a href="https://github.com/chrismey-71/cool-rooms/blob/main/LICENSE">MIT · Christian Meysing</a></dd>
+          <dt>Live-Demo</dt><dd>Noch nicht verfügbar</dd>
+        </dl>
+      </aside>
+    </section>
+
+    <section class="section workflow-section" aria-labelledby="workflow-title">
+      <div class="section-header">
+        <p class="kicker">Ein gemeinsamer Überblick</p>
+        <h2 id="workflow-title">So wird aus Raumwahl Raumorganisation.</h2>
+        <p>Alle arbeiten mit denselben eingetragenen Raumzuordnungen, mit einer passenden Ansicht für jede Rolle.</p>
+      </div>
+      <ol class="workflow">
+        <li><span class="step-number" aria-hidden="true">01</span><div><h3>Raum wählen</h3><p>Schüler:innen tippen einen Raum an. Farbige Gruppen helfen bei der Orientierung.</p></div></li>
+        <li><span class="step-number" aria-hidden="true">02</span><div><h3>Klasse begleiten</h3><p>Lehrkräfte setzen ihren Raum, wählen die verantwortliche Klasse und öffnen die Live-Übersicht.</p></div></li>
+        <li><span class="step-number" aria-hidden="true">03</span><div><h3>Schultag steuern</h3><p>Die Administration pflegt Stammdaten, prüft Belegungen und setzt den COOL-Tag zurück.</p></div></li>
+      </ol>
+    </section>
+
+    <section class="section" id="umfang" aria-labelledby="features-title">
+      <div class="section-header">
+        <h2 id="features-title">Der Funktionsumfang auf einen Blick</h2>
+        <p>Drei Bereiche, ein System: einfache Raumwahl für Schüler:innen, Überblick für Lehrkräfte und zentrale Verwaltung.</p>
+      </div>
+      <div class="role-grid">
+        <article class="role-card role-student">
+          <span class="role-label">Schüler:innen</span>
+          <h3>Den passenden Raum schnell finden</h3>
+          <ul>
+            <li>Raum per Schnellauswahl antippen und buchen</li>
+            <li>Farbige Gruppen nach Etage, Ort oder Funktion</li>
+            <li>Eigenen Klassenraum und aktuell gewählten Raum erkennen</li>
+            <li>Belegung und Raumkapazitäten berücksichtigen</li>
+            <li>Aktuellen Raum von Lehrkräften nachschlagen</li>
+            <li>Im Kiosk nur Raumwahl und Lehrkräftesuche nutzen</li>
+          </ul>
+        </article>
+        <article class="role-card role-teacher">
+          <span class="role-label">Lehrkräfte</span>
+          <h3>Standort setzen, Klasse begleiten</h3>
+          <ul>
+            <li>Eigenen Raum über die Schnellauswahl setzen</li>
+            <li>Verantwortliche Klasse wählen oder abwählen</li>
+            <li>Klassen- und Raumübersicht live anzeigen</li>
+            <li>Anwesenheit der eigenen Klasse verwalten</li>
+            <li>Anwesende Schüler:innen in den Klassenraum buchen</li>
+            <li>Raumzuordnungen der eigenen Klasse löschen</li>
+            <li>Klassen-Kiosk-PIN verwalten und anzeigen</li>
+            <li>Schüler:innenpasswörter der eigenen Klasse zurücksetzen</li>
+          </ul>
+        </article>
+        <article class="role-card role-admin">
+          <span class="role-label">Administration</span>
+          <h3>Räume, Klassen und Zugänge verwalten</h3>
+          <ul>
+            <li>Räume, Kapazitäten und Lehrkräfteräume pflegen</li>
+            <li>Gruppen benennen, einfärben und per Ziehen sortieren</li>
+            <li>Klassen umbenennen und Klassenräume zuweisen</li>
+            <li>Ausgeschiedene Klassen samt Schüler:innen löschen</li>
+            <li>Schüler:innen per CSV importieren und gesammelt bearbeiten</li>
+            <li>Lehrkräfte, Admins und Klassenkennwörter verwalten</li>
+            <li>Belegungen und Ereignisse auswerten</li>
+            <li>Kiosk-Zeitraum und Login-Schutz konfigurieren</li>
+            <li>COOL-Tag zurücksetzen, Anwesenheit wiederherstellen</li>
+            <li>Titel, Untertitel, Logo und Farben anpassen</li>
+          </ul>
+        </article>
+      </div>
+      <div class="feature-list">
+        <article class="feature"><h3>Live statt ständig neu laden</h3><p>Klassen- und Raumansichten übernehmen Änderungen über Server-Sent Events. Das macht neue Raumzuordnungen nachvollziehbar.</p></article>
+        <article class="feature"><h3>Raumgruppen mit Orientierung</h3><p>Etage, Ort und Funktion bekommen eigene Bezeichnungen und Farben. Reihenfolgen lassen sich in der Verwaltung per Ziehen festlegen.</p></article>
+        <article class="feature"><h3>Klassenräume mitdenken</h3><p>Jede Klasse kann einen eigenen Klassenraum bekommen. Die Raumwahl zeigt ihn an; Lehrkräfte können ihre Klasse gesammelt dorthin buchen.</p></article>
+        <article class="feature"><h3>Für Smartphone und Raumcomputer</h3><p>Die Oberfläche passt sich dem Gerät an. Auf dem iPhone lässt sich die App mit eigenem App-Icon auf dem Home-Bildschirm ablegen.</p></article>
+        <article class="feature"><h3>Für die eigene Schule gestalten</h3><p>Ein neutrales Standardlogo ist enthalten. Titel, Untertitel, hochgeladenes Logo und Farbkonzept lassen sich im Adminbereich ändern.</p></article>
+        <article class="feature"><h3>Rollen und geschützte Aktionen</h3><p>Rollenrechte, Passwort-Hashes, PDO-Prepared-Statements und CSRF-Prüfungen sind integriert. Fehlversuche und Sperrdauer sind einstellbar.</p></article>
+      </div>
+    </section>
+
+    <section class="section" id="einblicke" aria-labelledby="screenshots-title">
+      <div class="section-header">
+        <p class="kicker">Direkt aus der Anwendung</p>
+        <h2 id="screenshots-title">Einblicke in COOL Rooms</h2>
+        <p>Die Screenshots zeigen Version 1.21 in einer lokalen Beispielinstallation. Alle Namen, Klassen, Räume und PINs sind fiktive Beispieldaten, keine Daten einer echten Schule.</p>
+        <p class="screenshot-hint">Bild anklicken, um die Ansicht zu vergrößern.</p>
+      </div>
+      <div class="screenshot-grid">
+        <figure class="screenshot-card"><a class="screenshot-trigger" href="screenshots/01-raumwahl.jpg" data-title="Schnelle Raumwahl für Schüler:innen" aria-label="Screenshot Raumwahl vergrößern"><img src="screenshots/01-raumwahl.jpg" width="1280" height="1565" loading="lazy" decoding="async" alt="Schüler:innenansicht mit Klassenraum, aktuellem Raum und farbig gruppierter Raum-Schnellauswahl"></a><figcaption><h3>Schnelle Raumwahl</h3><p>Klassenraum und aktueller Raum bleiben sichtbar. Die Raumkacheln sind nach Etage, Ort und Funktion gruppiert.</p></figcaption></figure>
+        <figure class="screenshot-card"><a class="screenshot-trigger" href="screenshots/02-lehrerbereich.jpg" data-title="Lehrkräftebereich mit aktueller Auswahl" aria-label="Screenshot Lehrkräftebereich vergrößern"><img src="screenshots/02-lehrerbereich.jpg" width="1280" height="984" loading="lazy" decoding="async" alt="Lehrkräfte-Dashboard mit Mein Raum, verantwortlicher Klasse, Klassen-Kiosk-PIN und gruppierten Werkzeugen"></a><figcaption><h3>Lehrkräftebereich</h3><p>Eigener Raum, verantwortliche Klasse und Kiosk-PIN stehen oben. Tagessteuerung und Klassenwerkzeuge sind getrennt.</p></figcaption></figure>
+        <figure class="screenshot-card"><a class="screenshot-trigger" href="screenshots/03-klassenuebersicht.jpg" data-title="Klasse live anzeigen" aria-label="Screenshot Klassenübersicht vergrößern"><img src="screenshots/03-klassenuebersicht.jpg" width="1280" height="1035" loading="lazy" decoding="async" alt="Live-Klassenübersicht mit fiktiven Schüler:innen, Raumzuordnungen und Anwesenheitsaktionen"></a><figcaption><h3>Klasse live im Blick</h3><p>Raumzuordnungen und Anwesenheit pro Person, ergänzt um das gemeinsame Einbuchen in den Klassenraum.</p></figcaption></figure>
+        <figure class="screenshot-card"><a class="screenshot-trigger" href="screenshots/04-administration.jpg" data-title="Administration nach Aufgabenbereichen" aria-label="Screenshot Administration vergrößern"><img src="screenshots/04-administration.jpg" width="1280" height="1438" loading="lazy" decoding="async" alt="Administrations-Dashboard mit farblich getrennten Bereichen Raumsteuerung, Klassenorganisation und Lehrkräfte und Überblick"></a><figcaption><h3>Übersichtliche Administration</h3><p>Raumsteuerung, Klassenorganisation sowie Lehrkräfte und Überblick sind als zusammengehörige Bereiche angeordnet.</p></figcaption></figure>
+        <figure class="screenshot-card"><a class="screenshot-trigger" href="screenshots/05-raumverwaltung.jpg" data-title="Räume und ihre Gruppen verwalten" aria-label="Screenshot Raumverwaltung vergrößern"><img src="screenshots/05-raumverwaltung.jpg" width="1280" height="1974" loading="lazy" decoding="async" alt="Raumverwaltung mit Gruppierung, Etage Ort Funktion und farblich gekennzeichneten Raumgruppen"></a><figcaption><h3>Räume passend ordnen</h3><p>Bezeichnungen, Kapazitäten, Gruppenfarben und Reihenfolgen bilden die Gegebenheiten der eigenen Schule ab.</p></figcaption></figure>
+        <figure class="screenshot-card"><a class="screenshot-trigger" href="screenshots/06-klassenkiosk.jpg" data-title="Freigeschalteter Klassen-Kiosk" aria-label="Screenshot Klassen-Kiosk vergrößern"><img src="screenshots/06-klassenkiosk.jpg" width="1280" height="951" loading="lazy" decoding="async" alt="Klassen-Kiosk mit freigeschalteter Beispielklasse und Namensauswahl für aufeinanderfolgende Raumwahlen"></a><figcaption><h3>Ein Gerät für die ganze Klasse</h3><p>Nach Eingabe der Klassen-PIN genügt die Namensauswahl. Beim Zurückwechseln bleibt der Kiosk für die nächste Person geöffnet.</p></figcaption></figure>
+      </div>
+    </section>
+
+    <section class="section" id="kiosk" aria-labelledby="kiosk-title">
+      <div class="kiosk-panel">
+        <div>
+          <p class="kicker">Gemeinsam genutzte Schulgeräte</p>
+          <h2 id="kiosk-title">Ein Raumcomputer. Viele Raumwahlen.</h2>
+          <p>Gerade zu Beginn einer Stunde müssen nicht alle Schüler:innen ihre eigene App öffnen. Eine Lehrkraft kann den Klassen-Kiosk an einem zentralen Computer freischalten.</p>
+          <ol class="kiosk-steps">
+            <li>Die Administration aktiviert den Kiosk für einen Von-bis-Zeitraum.</li>
+            <li>Die Lehrkraft öffnet den Kiosk und gibt die Klassen-PIN selbst ein.</li>
+            <li>Eine Person wählt ihren Namen und anschließend ihren Raum.</li>
+            <li>Ein Klick auf <strong>„Kiosk“</strong> meldet diese Person ab. Klasse und Freigabe bleiben für die nächste Person erhalten.</li>
+            <li>Am Ende beendet <strong>„Kiosk beenden“</strong> die Freigabe auf diesem Gerät. Der PIN selbst bleibt gültig.</li>
+          </ol>
+        </div>
+        <aside class="kiosk-note">
+          <h3>Gezielt freigeschaltet</h3>
+          <p>Eine Klassen-PIN öffnet nur die betreffende Klasse. Der schulweite Code ermöglicht die Klassenauswahl.</p>
+          <p>Im Kiosk stehen Schüler:innen nur <strong>Raumwahl</strong> und <strong>Lehrkräfte finden</strong> zur Verfügung. Nach Inaktivität geht es automatisch zurück zur Namensauswahl.</p>
+          <p class="note-divider">Der Kiosk ist für betreute, gemeinsam genutzte Geräte gedacht. Die PIN sollte von der Lehrkraft eingegeben werden.</p>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section" id="handbuch" aria-labelledby="docs-title">
+      <div class="section-header"><h2 id="docs-title">Handbuch und Dokumentation</h2><p>Für den Einstieg, den Schulbetrieb und die eigene Installation.</p></div>
+      <div class="document-grid">
+        <a class="document-link" href="https://github.com/chrismey-71/cool-rooms/blob/main/BENUTZERHANDBUCH_LEHRER.md"><span class="document-kind">Lehrkräfte · Online</span><h3>Benutzerhandbuch lesen <span aria-hidden="true">↗</span></h3><p>Ausführliche Anleitung zu Raumwahl, Klassenübersicht, Anwesenheit und Klassenwerkzeugen. Als Dokument direkt auf GitHub.</p></a>
+        <a class="document-link" href="https://github.com/chrismey-71/cool-rooms/raw/refs/heads/main/BENUTZERHANDBUCH_LEHRER.docx"><span class="document-kind">Lehrkräfte · Word</span><h3>Word-Handbuch herunterladen <span aria-hidden="true">↓</span></h3><p>Das strukturierte Benutzerhandbuch als Word-Dokument zum Weitergeben, Nachlesen oder Ausdrucken.</p></a>
+        <a class="document-link" href="https://github.com/chrismey-71/cool-rooms/blob/main/README.md#neuinstallation"><span class="document-kind">Administration · Einrichtung</span><h3>Installation und Updates <span aria-hidden="true">↗</span></h3><p>Voraussetzungen, externe Setup-Datei, Datenbankeinrichtung, Konfiguration und Hinweise für bestehende Installationen.</p></a>
+      </div>
+    </section>
+
+    <section class="section" id="betrieb" aria-labelledby="hosting-title">
+      <div class="section-header"><h2 id="hosting-title">Eigenbetrieb statt Cloud-Zwang</h2><p>COOL Rooms ist quelloffen und für den Betrieb auf einem eigenen PHP-Webspace gedacht.</p></div>
+      <div class="two-columns">
+        <article class="panel"><h3>Was für den Betrieb gebraucht wird</h3><ul><li>PHP 8.0 oder neuer mit PDO-MySQL und mbstring</li><li>MySQL oder MariaDB mit InnoDB und utf8mb4</li><li>Sodium oder OpenSSL für den geschützten PIN-Speicher</li><li>HTTPS und ein Webserver, der Live-Antworten per SSE unterstützt</li></ul><p class="panel-bottom"><a href="https://github.com/chrismey-71/cool-rooms/blob/main/README.md">Vollständige Voraussetzungen und Anleitung</a></p></article>
+        <article class="panel responsibility"><h3>Bewusst mit Schuldaten umgehen</h3><p>Die App zeigt <strong>eingetragene Raumzuordnungen</strong>, keine automatische Standortverfolgung. Der Überblick hängt von der tatsächlichen Raumwahl der Schüler:innen und Lehrkräfte ab.</p><p>Beim Einsatz mit echten Daten müssen Zugriffsrechte, Datenschutz, Serverkonfiguration, Aufbewahrung und Backups von der betreibenden Schule geregelt werden.</p><p class="panel-bottom"><a href="https://github.com/chrismey-71/cool-rooms/blob/main/SECURITY.md">Sicherheitshinweise und Meldung von Schwachstellen</a></p></article>
+      </div>
+      <aside class="demo-note" aria-labelledby="demo-title"><span class="demo-symbol" aria-hidden="true">i</span><div><h3 id="demo-title">Noch keine öffentliche Live-Demo</h3><p>Diese Webseite stellt das Projekt vor. Die Screenshots sind echte App-Ansichten mit fiktiven Daten; sie sind keine bedienbare Demo. Wer COOL Rooms ausprobieren möchte, kann den Quellcode herunterladen und eine eigene Testinstallation einrichten. GitHub Pages selbst führt die PHP-Anwendung nicht aus.</p></div></aside>
+    </section>
+  </main>
+
+  <footer class="footer"><div class="page footer-content"><p><strong>COOL Rooms</strong> · Raumorganisation für Schulen<br><span>© 2026 Christian Meysing · <a href="https://github.com/chrismey-71/cool-rooms/blob/main/LICENSE">MIT-Lizenz</a></span></p><nav aria-label="Projektlinks"><a href="https://github.com/chrismey-71/cool-rooms">Repository</a><a href="https://github.com/chrismey-71/cool-rooms/issues">Fehler &amp; Ideen</a><a href="https://chrismey-71.github.io/cool-grades/">Auch entdecken: COOL-Grades</a></nav></div></footer>
+
+  <dialog class="lightbox" id="screenshot-dialog" aria-labelledby="lightbox-title">
+    <div class="lightbox-header"><h2 id="lightbox-title">Screenshot</h2><button type="button" class="lightbox-close" aria-label="Screenshot-Ansicht schließen">Schließen <span aria-hidden="true">×</span></button></div>
+    <img class="lightbox-image" src="screenshots/01-raumwahl.jpg" alt="" width="1280" height="1565">
+    <div class="lightbox-controls"><button type="button" data-gallery-prev aria-label="Vorheriger Screenshot">← Zurück</button><span data-gallery-position aria-live="polite"></span><button type="button" data-gallery-next aria-label="Nächster Screenshot">Weiter →</button></div>
+  </dialog>
+</body>
+</html>

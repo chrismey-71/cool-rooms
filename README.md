@@ -6,6 +6,8 @@
 
 <p align="center"><strong>Buche deinen Raum</strong></p>
 
+<p align="center"><a href="https://chrismey-71.github.io/cool-rooms/">Projektwebseite mit Funktionsüberblick und Screenshots</a></p>
+
 COOL Rooms ist eine webbasierte Raumorganisation für Schulen. Schüler:innen wählen ihren aktuellen Aufenthaltsraum, Lehrkräfte geben ihren eigenen Standort bekannt und behalten verantwortliche Klassen im Blick. Administrator:innen verwalten Räume, Klassen, Benutzerkonten, Kiosk-Zugänge und das Erscheinungsbild.
 
 Die Anwendung ist für den Betrieb auf einem klassischen PHP-/MariaDB-Webspace ausgelegt und kann als Progressive Web App auf dem Home-Bildschirm eines Smartphones gespeichert werden.
@@ -209,6 +211,8 @@ Für den produktiven Betrieb werden mindestens folgende Maßnahmen empfohlen:
 - Ereignisprotokolle und Kiosk-Auswertungen regelmäßig prüfen und gemäß dem eigenen Löschkonzept bereinigen
 
 ## Projektstruktur
+
+Die statische Projektwebseite liegt in `docs/` und wird über GitHub Pages unter <https://chrismey-71.github.io/cool-rooms/> veröffentlicht. Die Screenshots stammen aus einer lokalen Beispielinstallation mit ausschließlich fiktiven Daten. Es gibt derzeit keine öffentliche Live-Demo. GitHub Pages veröffentlicht nur `docs/`, nicht die PHP-Anwendung unter `www/`.
 
 ```text
 www/

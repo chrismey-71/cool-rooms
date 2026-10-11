@@ -18,9 +18,15 @@ $validFrom = (string)$kioskState['valid_from'];
 $validTo = (string)$kioskState['valid_to'];
 $validToday = (bool)$kioskState['valid_today'];
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'end_kiosk') {
+  csrf_check();
+  logout_now();
+  redirect(url('/kiosk.php'));
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'reset_student') {
   csrf_check();
-  kiosk_clear_session_identity();
+  kiosk_reset_student($pdo);
   session_regenerate_id(true);
   redirect(url('/kiosk.php'));
 }
@@ -202,10 +208,11 @@ require __DIR__ . '/partials/header.php';
         </p>
       </form>
 
-      <form method="post" action="<?= h(url('/logout.php')) ?>" class="small">
+      <p class="small">Nach der Raumwahl in der Schüleransicht auf „Kiosk“ klicken. Die aktuelle Person wird abgemeldet; die freigeschaltete Klasse und der Kioskzugang bleiben für die nächste Person erhalten.</p>
+      <form method="post" action="<?= h(url('/kiosk.php')) ?>" class="small">
         <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
-        <input type="hidden" name="to" value="kiosk">
-        <span>Tipp: Am Ende einfach </span><button type="submit" class="link-button">abmelden (zurück zum Kiosk)</button>.
+        <input type="hidden" name="action" value="end_kiosk">
+        <span>Wenn niemand mehr buchen soll: </span><button type="submit" class="link-button">Kiosk beenden</button> (PIN-Freigabe entfernen).
       </form>
     </div>
   <?php endif; ?>

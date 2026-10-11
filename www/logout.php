@@ -17,7 +17,12 @@ csrf_check();
 
 $to = $_POST['to'] ?? '';
 
-logout_now();
+if ($to === 'kiosk' && !empty($_SESSION['via_kiosk'])) {
+  kiosk_reset_student(db());
+  session_regenerate_id(true);
+} else {
+  logout_now();
+}
 
 $target = $to === 'kiosk' ? '/kiosk.php' : '/index.php';
 redirect(url($target));

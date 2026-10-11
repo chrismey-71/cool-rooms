@@ -314,7 +314,7 @@ require __DIR__ . '/../partials/header.php';
       <li>Öffne am Klassen- oder Raumcomputer <span class="badge"><?= h(url('/kiosk.php')) ?></span>.</li>
       <li>Gib die Klassen-Kiosk-PIN selbst ein, damit nur deine Klasse freigeschaltet wird. Die PIN sollte nicht an die Klasse verteilt werden.</li>
       <li>Lass eine Schülerin oder einen Schüler den eigenen Namen auswählen und den gewünschten Raum buchen.</li>
-      <li>Nach der Raumwahl meldet sich diese Person über „Abmelden“ wieder zurück zum Kiosk. Danach ist die nächste Person an der Reihe.</li>
+      <li>Nach der Raumwahl klickt diese Person auf „Kiosk“ oder „Abmelden“. Die Klassenfreigabe bleibt erhalten, und die nächste Person kann ihren Namen wählen, ohne die PIN erneut einzugeben. Mit „Kiosk beenden“ wird die Freigabe auf diesem Gerät beendet; die PIN selbst bleibt gültig.</li>
       <li>Wenn alle fertig sind, schließe den Kiosk oder melde das Gerät bewusst ab, damit keine weitere Raumwahl unbeaufsichtigt erfolgt.</li>
       <li>PIN-Arten:
         <ul>

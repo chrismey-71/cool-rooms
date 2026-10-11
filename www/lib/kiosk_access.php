@@ -163,6 +163,15 @@ function kiosk_session_grant_valid(PDO $pdo, ?string $today = null): bool {
   return $expected !== null && $actual !== '' && hash_equals($expected, $actual);
 }
 
+function kiosk_reset_student(PDO $pdo): void {
+  // Keep a valid kiosk grant for the next student, but discard revoked grants.
+  if (!kiosk_session_grant_valid($pdo)) {
+    kiosk_clear_session_identity();
+    return;
+  }
+  unset($_SESSION['uid'], $_SESSION['last_activity'], $_SESSION['via_kiosk']);
+}
+
 function kiosk_clear_session_identity(): void {
   unset(
     $_SESSION['uid'],

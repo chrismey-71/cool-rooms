@@ -184,7 +184,28 @@ Der Kioskmodus ist für gemeinsam genutzte Schulcomputer gedacht. Ein Administra
 
 Eine ausschließlich über den Kiosk erfolgte Anmeldung bietet nur Raumwahl und Lehrkräftesuche. Nach Inaktivität kehrt die Anwendung automatisch zum Kiosk-Einstieg zurück.
 
-Unter **Administration → Login-Schutz** können die erlaubten Fehlversuche und die Sperrdauer festgelegt werden. Zulässig sind 3 bis 20 Fehlversuche und 1 bis 30 Minuten Sperrdauer. Die Einstellung gilt für normale Logins und Kiosk-Codeprüfungen; sie ändert keinen gespeicherten PIN und macht keinen COOL-PIN dauerhaft ungültig.
+Unter **Administration → Login-Schutz** können die erlaubten Fehlversuche und die Sperrdauer festgelegt werden. Zulässig sind 3 bis 20 Fehlversuche und 1 bis 30 Minuten Sperrdauer. Die Einstellung ändert keinen gespeicherten PIN und macht keinen COOL-PIN dauerhaft ungültig.
+
+### Login-Schutz im gemeinsamen Schulnetz ab Version 1.23
+
+- Normale Logins werden pro Benutzerkonto begrenzt, nicht über einen gemeinsamen niedrigen IP-Fehlversuchszähler. Ein gesperrtes Konto bleibt auch bei einem IP-Wechsel gesperrt; andere Konten derselben Schul-IP bleiben nutzbar. Auch unbekannte Benutzernamen erhalten dieselbe Begrenzung und neutrale Fehlermeldungen. Die Schreibweise vorhandener Konten wird vor der Begrenzung mit der Datenbank abgeglichen.
+- Kiosk-Codeprüfungen werden pro Browser begrenzt. Eine signierte zufällige Browserkennung im HttpOnly-/SameSite-Sitzungscookie bleibt bei Logout und Session-ID-Wechsel erhalten. Sie verleiht keine Kiosk-Berechtigung. Bereits freigeschaltete Schul- und Klassen-Kioske bleiben gültig, solange ihre bisherigen Zugangsbedingungen erfüllt sind.
+- Nach Ablauf der Sperrdauer steht wieder die volle Versuchszahl bereit. Erfolgreiche Anmeldungen löschen nur den zugehörigen Konto- oder Browserzähler. Parallele Versuche werden vor der Passwort-/PIN-Prüfung atomar reserviert; die letzte erlaubte Eingabe kann noch erfolgreich sein.
+- Alte gemeinsame Sperren (`login_source`, `kiosk_source`, `kiosk_global`) werden beim ersten Zugriff auf die Schutzfunktionen einmalig entfernt. Bestehende Kontosperren, PINs und Stammdaten bleiben erhalten. Es ist keine Neuinstallation erforderlich.
+
+Zusätzlich gibt es getrennte großzügige **Kurzzeitlimits je IP**: standardmäßig 600 normale Login-Anfragen und 120 Kiosk-Codeprüfungen in einem 60-Sekunden-Fenster ab der ersten Anfrage. Auch erfolgreiche und bereits konto-/browserseitig gesperrte Prüfversuche zählen dabei mit; GET-Seitenaufrufe und die Namenswahl in einem bereits freigeschalteten Kiosk zählen nicht. Ein Erfolg setzt dieses IP-Budget nicht zurück. Nach Ausschöpfen werden weitere Prüfungen nur bis zum Ende des laufenden Fensters abgewiesen (höchstens 60 Sekunden), ohne es durch weitere Anfragen zu verlängern. Andere Geräte derselben IP können in diesem Ausnahmefall kurz betroffen sein. Die Adminseite erlaubt 100–5000 Login-Anfragen beziehungsweise 30–1000 Kiosk-Prüfungen je Minute; große Schulen sollten diese Werte anhand der tatsächlichen Last anpassen.
+
+Eine Browserkennung ist kein vollständiger Schutz gegen automatisiertes PIN-Raten: Cookie-Löschung oder ein neuer Browser können eine neue Kennung erzeugen; verteilte Angriffe über mehrere IP-Adressen können auch den IP-Schutz umgehen. Kontosperren können zudem durch absichtliche Fehlversuche gegen ein bekanntes Konto ausgelöst werden. Kurze PINs daher nur für beaufsichtigte Kioske und begrenzte Gültigkeitszeiträume einsetzen. Die Server-IP stammt ausschließlich aus `REMOTE_ADDR`; hinter Reverse Proxies muss der Betreiber diese Adresse vertrauenswürdig aufbereiten. Ungeprüfte `X-Forwarded-For`-Header werden nicht verwendet.
+
+### Regressionstests
+
+`tests/security_integration.php` prüft die Begrenzungen mit echten PDO-/MariaDB-Transaktionen, mehreren Browserkennungen und 20 parallelen Prozessen. Nur gegen eine **separate, leere Testdatenbank** namens `cool_rooms_security_test` ausführen, niemals gegen eine produktive Datenbank. Eine separate Kopie des Projektordners vorbereiten, dort `www/config.php` mit ausschließlich lokalen Testzugangsdaten anlegen und den absoluten Pfad dieser Kopie über `COOL_ROOMS_TEST_ROOT` übergeben:
+
+```sh
+COOL_ROOMS_TEST_ROOT=/ABSOLUTER/PFAD/ZUR/TESTKOPIE php tests/security_integration.php
+```
+
+Die Testdatenbank muss vor jeder Ausführung leer sein; PHP-CLI benötigt PDO-MySQL sowie `proc_open` für die Parallelitätstests. Die Arbeitskopie selbst wird als Ziel abgewiesen. Die Tests erstellen ausschließlich Beispieldaten in der ausdrücklich gewählten Testinstallation.
 
 ## Automatischer Tagesreset per Cron
 

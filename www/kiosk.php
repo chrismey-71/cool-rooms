@@ -11,6 +11,7 @@ require_once __DIR__ . '/lib/security.php';
 require_once __DIR__ . '/lib/kiosk_access.php';
 
 $pdo = db();
+security_browser_id();
 $today = (new DateTimeImmutable('now'))->format('Y-m-d');
 $kioskState = kiosk_access_state($pdo, $today);
 $enabled = (bool)$kioskState['enabled'];
@@ -41,10 +42,9 @@ if (!$verified && !empty($_SESSION['via_kiosk'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'verify') {
   csrf_check();
   $code = trim((string)($_POST['day_code'] ?? ''));
-  $throttle = security_kiosk_status($pdo);
+  $throttle = security_kiosk_begin($pdo);
   if ($throttle['locked']) {
-    $minutes = max(1, (int)ceil((int)$throttle['retry_after'] / 60));
-    flash_set('error', 'Zu viele falsche Eingaben. Bitte in etwa ' . $minutes . ' Minute(n) erneut versuchen.');
+    flash_set('error', security_retry_message($throttle));
     redirect(url('/kiosk.php'));
   }
 
@@ -74,8 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'verif
   }
   $throttle = security_kiosk_failure($pdo);
   if ($throttle['locked']) {
-    $minutes = max(1, (int)ceil((int)$throttle['retry_after'] / 60));
-    flash_set('error', 'Zu viele falsche Eingaben. Bitte in etwa ' . $minutes . ' Minute(n) erneut versuchen.');
+    flash_set('error', security_retry_message($throttle));
   } else {
     flash_set('error', 'Kennwort ungültig oder Kiosk nicht aktiv.');
   }

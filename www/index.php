@@ -17,8 +17,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     redirect(url('/dashboard.php'));
   }
   if (!empty($_SESSION['login_retry_after'])) {
-    $minutes = max(1, (int)ceil((int)$_SESSION['login_retry_after'] / 60));
-    flash_set('error', 'Zu viele fehlgeschlagene Versuche. Bitte in etwa ' . $minutes . ' Minute(n) erneut versuchen.');
+    flash_set('error', security_retry_message([
+      'retry_after' => (int)$_SESSION['login_retry_after'],
+      'kind' => (string)($_SESSION['login_retry_kind'] ?? 'account'),
+    ]));
   } else {
     flash_set('error', 'Login fehlgeschlagen.');
   }

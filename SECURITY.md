@@ -6,7 +6,7 @@ COOL Rooms befindet sich in aktiver Entwicklung. Sicherheitskorrekturen werden g
 
 | Version | Unterstützt |
 | --- | --- |
-| 1.21 | Ja |
+| 1.23 | Ja |
 | Ältere Versionen | Nein |
 
 Betreiber:innen sollten vor einem Update die Datenbank, `www/config.php` und eigene Dateien unter `www/assets/branding/` sichern.
@@ -67,6 +67,8 @@ Folgende Eigenschaften müssen erhalten bleiben:
 - Datenbankwerte aus nicht vertrauenswürdigen Quellen werden über PDO-Parameter gebunden und nicht in SQL-Text eingesetzt.
 - Passwörter und Kiosk-Zugangscodes werden mit der PHP Password API gehasht und geprüft; Codes, die im Lehrerbereich erneut angezeigt werden müssen, liegen zusätzlich nur verschlüsselt vor.
 - Fehlversuche bei Login und Kiosk werden serverseitig begrenzt. Die Admin-Einstellung erlaubt 3 bis 20 Versuche und 1 bis 30 Minuten Sperrdauer.
+- Normale Anmeldungen werden pro Konto, Kiosk-Codeprüfungen pro signierter Browserkennung begrenzt. Gemeinsame Schul-IPs dürfen nicht durch niedrige, kontoübergreifende Fehlversuchszähler minutenlang gesperrt werden.
+- Gegen massenhaft neue Kontonamen oder Browserkennungen gibt es separate kurze IP-Anfragebudgets; deren Fenster dürfen durch abgewiesene Anfragen nicht verlängert werden. Cookie-Löschung und verteilte Angriffe bleiben ausdrücklich Grenzen dieses Schutzes.
 - Nach erfolgreicher Anmeldung oder einem Wechsel der Sitzungsidentität wird die Session-ID erneuert.
 - Ausgaben aus Benutzereingaben werden passend zum Ausgabekontext maskiert.
 - Datei-Uploads werden nach Typ, Größe, Inhalt und Zielpfad begrenzt.

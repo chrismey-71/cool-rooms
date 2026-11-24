@@ -131,28 +131,34 @@ function require_student(): array {
 
 function login_attempt(string $username, string $password): bool {
   $pdo = db();
-  $status = security_login_status($pdo, $username);
+  unset($_SESSION['login_retry_after'], $_SESSION['login_retry_kind']);
+  // Use the stored spelling: case/accent aliases under the DB collation share a bucket.
+  $stmt = $pdo->prepare("SELECT id, username, password_hash FROM users WHERE username=? AND is_active=1");
+  $stmt->execute([$username]);
+  $row = $stmt->fetch();
+  $identifier = $row ? (string)$row['username'] : $username;
+  $status = security_login_begin($pdo, $identifier);
   if ($status['locked']) {
-    password_verify($password, '$2y$10$7EqJtq98hPqEX7fNZaFWoO5QhA1cJ4xj4Q9Q4nK4Zf3Qv4L7nK1Aa');
     $_SESSION['login_retry_after'] = max(1, (int)$status['retry_after']);
+    $_SESSION['login_retry_kind'] = $status['kind'];
     return false;
   }
 
-  $stmt = $pdo->prepare("SELECT id, password_hash FROM users WHERE username=? AND is_active=1");
-  $stmt->execute([$username]);
-  $row = $stmt->fetch();
   $valid = $row && password_verify($password, (string)$row['password_hash']);
   if (!$valid) {
     if (!$row) {
       password_verify($password, '$2y$10$7EqJtq98hPqEX7fNZaFWoO5QhA1cJ4xj4Q9Q4nK4Zf3Qv4L7nK1Aa');
     }
-    $status = security_login_failure($pdo, $username);
-    if ($status['locked']) $_SESSION['login_retry_after'] = max(1, (int)$status['retry_after']);
+    $status = security_login_failure($pdo, $identifier);
+    if ($status['locked']) {
+      $_SESSION['login_retry_after'] = max(1, (int)$status['retry_after']);
+      $_SESSION['login_retry_kind'] = $status['kind'];
+    }
     return false;
   }
 
-  security_login_success($pdo, $username);
-  unset($_SESSION['login_retry_after']);
+  security_login_success($pdo, $identifier);
+  unset($_SESSION['login_retry_after'], $_SESSION['login_retry_kind']);
 
   session_regenerate_id(true);
   $_SESSION['uid'] = (int)$row['id'];

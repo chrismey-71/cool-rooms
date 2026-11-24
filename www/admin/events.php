@@ -73,6 +73,7 @@ $TYPE_LABELS = [
   'admin_teacher_deleted' => 'Admin: Lehrer gelöscht',
   'reset' => 'Reset: Raumzuordnungen gelöscht',
   'admin_reset_all_assignments' => 'Admin: COOL-Tag zurückgesetzt',
+  'cron_reset_all_assignments' => 'Automatik: COOL-Tag zurückgesetzt',
 ];
 
 $types = $pdo->query("SELECT DISTINCT type FROM events ORDER BY type")->fetchAll(PDO::FETCH_COLUMN);

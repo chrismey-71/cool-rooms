@@ -42,6 +42,7 @@ Die Anwendung ist für den Betrieb auf einem klassischen PHP-/MariaDB-Webspace a
 - Raumbelegung live überblicken
 - Kioskmodus mit Gültigkeitszeitraum und Tagescode steuern
 - Tagesdaten und Anwesenheitsstatus zurücksetzen
+- Optionaler automatischer Tagesreset per Cron (nur Kommandozeile)
 - Ereignisse und Kiosk-Nutzung auswerten
 - Titel, Untertitel, Logo und Farbschema anpassen
 
@@ -185,6 +186,54 @@ Eine ausschließlich über den Kiosk erfolgte Anmeldung bietet nur Raumwahl und 
 
 Unter **Administration → Login-Schutz** können die erlaubten Fehlversuche und die Sperrdauer festgelegt werden. Zulässig sind 3 bis 20 Fehlversuche und 1 bis 30 Minuten Sperrdauer. Die Einstellung gilt für normale Logins und Kiosk-Codeprüfungen; sie ändert keinen gespeicherten PIN und macht keinen COOL-PIN dauerhaft ungültig.
 
+## Automatischer Tagesreset per Cron
+
+Ab Version 1.22 kann `cron/reset_daily.php` dieselben Tagesdaten wie **Administration → Alle Raumzuordnungen löschen** zurücksetzen. Das Skript läuft ausschließlich über PHP auf der Kommandozeile; Webaufrufe werden mit HTTP 404 abgewiesen. Die geschützte Adminseite wird nicht per HTTP aufgerufen. Es werden keine Admin-Zugangsdaten und kein öffentliches Reset-Token benötigt.
+
+Der Reset löscht alle Raumzuordnungen der Schüler:innen, die Standorte der Lehrkräfte und deren verantwortliche Klassen. Alle Schüler:innen werden wieder auf **anwesend** gesetzt. Benutzerkonten, Klassen, zugewiesene Klassenräume, Räume, Passwörter, Kiosk-PINs und Kiosk-Gültigkeitszeiträume bleiben erhalten. Bestehende Ereignisse werden nicht pauschal gelöscht; die übliche Aufbewahrung des Ereignisprotokolls bleibt unverändert.
+
+Reset und die zugehörigen Ereigniseinträge werden gemeinsam in einer Datenbanktransaktion durchgeführt. Bei einem Fehler wird die Transaktion zurückgerollt. Live-Ansichten erhalten nach erfolgreichem Abschluss das bisherige `reset`-Ereignis. Im Admin-Ereignisprotokoll ist der Vorgang als **Automatik: COOL-Tag zurückgesetzt** mit dem Ausführenden **Automatischer Tagesreset** erkennbar.
+
+### Dateien auf dem Server
+
+Den zusätzlichen Ordner `cron/` neben `www/` hochladen, nicht in das öffentliche Dokumentenverzeichnis. Das Skript lädt die vorhandene Konfiguration aus `../www/config.php`; die Zugangsdaten werden nicht nochmals eingetragen.
+
+```text
+/users/cool-rooms/
+├── cron/
+│   └── reset_daily.php
+├── logs/                       selbst anlegen, nicht öffentlich
+└── www/                        Dokumentenverzeichnis der Domain
+    ├── config.php              lokale Datei erhalten
+    └── lib/daily_reset.php
+```
+
+Bei einem Update müssen auch `www/lib/events.php`, `www/lib/daily_reset.php` und `www/admin/reset.php` aus derselben Version übernommen werden. Der Installer wird nicht erneut ausgeführt. Vorher wie bei jedem Update Dateien und Datenbank sichern.
+
+### Erst prüfen und dann planen
+
+Die folgenden Pfade sind Beispiele und müssen an den tatsächlichen Webspace angepasst werden. Auch der Pfad zur PHP-CLI (PHP 8.0 oder neuer mit PDO-MySQL) wird vom Hostinganbieter vorgegeben.
+
+Zunächst eine Vorschau ohne Änderungen ausführen:
+
+```sh
+/usr/bin/php /users/cool-rooms/cron/reset_daily.php --dry-run
+```
+
+Ohne `--dry-run` erfolgt der Reset sofort. Ein erfolgreicher Aufruf liefert Exit-Code 0 und die Anzahl der gelöschten Zuordnungen beziehungsweise wieder anwesend gesetzten Schüler:innen. Fehler liefern Exit-Code 1, ungültige Optionen Exit-Code 2. `--help` zeigt eine kurze Hilfe. Wiederholte erfolgreiche Aufrufe sind möglich; bereits leere Zuordnungen bleiben leer.
+
+### Benutzer Crontab täglich um 03 Uhr
+
+Im Hosting-Verwaltungsbereich beziehungsweise mit `crontab -e` eine tägliche Ausführung einrichten:
+
+```cron
+0 3 * * * /usr/bin/php /users/cool-rooms/cron/reset_daily.php >> /users/cool-rooms/logs/reset_daily.log 2>&1
+```
+
+`0 3 * * *` bedeutet täglich um 03:00 Uhr in der **Zeitzone des Cron-Dienstes**. Empfohlen wird `Europe/Vienna`; die Zeitzone der PHP-Ausgabe allein verändert den Ausführungszeitpunkt nicht. Wenn der Hostinganbieter `CRON_TZ` unterstützt, kann oberhalb des Eintrags zusätzlich `CRON_TZ=Europe/Vienna` stehen. Andernfalls die Zeitzone im Hosting-Verwaltungsbereich einstellen oder den Serveradministrator fragen. 03:00 Uhr vermeidet die bei der österreichischen Zeitumstellung problematische 02-Uhr-Stunde.
+
+Das Verzeichnis `logs/` muss vorher angelegt werden und für den Cron-Benutzer beschreibbar sein. Kann die Shell die Logdatei nicht öffnen, wird das Skript nicht gestartet. Logdatei außerhalb des Webverzeichnisses aufbewahren und regelmäßig rotieren. Nach der ersten Nacht Logdatei und Admin-Ereignisprotokoll prüfen. Die Veröffentlichung auf GitHub richtet noch keinen Cron-Job auf dem Schulserver ein; dieser Schritt erfolgt im Hosting.
+
 ## CSV-Import
 
 Der Schüler:innenimport erwartet eine UTF-8-Datei mit den Spalten:
@@ -215,6 +264,8 @@ Für den produktiven Betrieb werden mindestens folgende Maßnahmen empfohlen:
 Die statische Projektwebseite liegt in `docs/` und wird über GitHub Pages unter <https://chrismey-71.github.io/cool-rooms/> veröffentlicht. Die Screenshots stammen aus einer lokalen Beispielinstallation mit ausschließlich fiktiven Daten. Es gibt derzeit keine öffentliche Live-Demo. GitHub Pages veröffentlicht nur `docs/`, nicht die PHP-Anwendung unter `www/`.
 
 ```text
+cron/
+└── reset_daily.php   Optionaler Tagesreset per PHP-CLI
 www/
 ├── account/          Kontoeinstellungen
 ├── admin/            Administrationsbereich

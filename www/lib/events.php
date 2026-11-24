@@ -40,6 +40,7 @@ function events_device_type(string $ua): string {
 }
 
 function events_client_id(): string {
+  if (PHP_SAPI === 'cli') return '';
   $cookieName = 'cr_device_id';
   $id = (string)($_COOKIE[$cookieName] ?? '');
   if ($id !== '' && preg_match('/^[a-f0-9]{32}$/', $id)) return $id;
@@ -87,9 +88,10 @@ function ensure_events_schema(PDO $pdo): int {
   }
 }
 
-function emit_event(string $type, array $payload = []): void {
+function emit_event(string $type, array $payload = [], ?int $knownTypeMaxLength = null): void {
   $pdo = db();
-  $typeMaxLength = ensure_events_schema($pdo);
+  // Transactional callers prepare the schema before BEGIN (ALTER implicitly commits).
+  $typeMaxLength = $knownTypeMaxLength ?? ensure_events_schema($pdo);
   if ($typeMaxLength > 0 && strlen($type) > $typeMaxLength) {
     $type = substr($type, 0, $typeMaxLength);
   }

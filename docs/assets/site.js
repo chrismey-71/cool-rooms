@@ -12,8 +12,11 @@
   function showImage(index) {
     current = (index + triggers.length) % triggers.length;
     const trigger = triggers[current];
+    const preview = trigger.querySelector('img');
     image.src = trigger.href;
-    image.alt = trigger.querySelector('img').alt;
+    image.alt = preview.alt;
+    image.width = Number(preview.getAttribute('width'));
+    image.height = Number(preview.getAttribute('height'));
     title.textContent = trigger.dataset.title;
     position.textContent = `${current + 1} / ${triggers.length}`;
   }

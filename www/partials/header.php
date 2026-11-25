@@ -10,6 +10,9 @@ require_once __DIR__ . '/../lib/branding.php';
 $u = auth_user();
 $cfg = app_config();
 $branding = branding_settings();
+$iconVersion = APP_VERSION . '-' . APP_ICON_REVISION;
+$styleVersion = APP_VERSION . '-' . filemtime(__DIR__.'/../assets/styles.css');
+$scriptVersion = APP_VERSION . '-' . filemtime(__DIR__.'/../assets/app.js');
 $f = flash_get();
 
 $script = str_replace('\\','/', $_SERVER['SCRIPT_NAME'] ?? '');
@@ -36,12 +39,12 @@ function nav_link(string $href, string $label, string $pathRel, string $extraCla
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="format-detection" content="telephone=no">
   <title><?= h((string)$branding['brand_title']) ?></title>
-  <link rel="manifest" href="<?= h(url('/manifest.php?v=' . APP_VERSION)) ?>">
-  <link rel="apple-touch-icon" sizes="180x180" href="<?= h(url('/assets/icons/apple-touch-icon.png?v=' . APP_VERSION)) ?>">
-  <link rel="icon" type="image/png" sizes="32x32" href="<?= h(url('/assets/icons/favicon-32.png?v=' . APP_VERSION)) ?>">
-  <link rel="stylesheet" href="<?= h(url('/assets/styles.css?v=' . APP_VERSION)) ?>">
+  <link rel="manifest" href="<?= h(url('/manifest.php?v=' . $iconVersion)) ?>">
+  <link rel="apple-touch-icon" sizes="180x180" href="<?= h(url('/assets/icons/apple-touch-icon.png?v=' . $iconVersion)) ?>">
+  <link rel="icon" type="image/png" sizes="32x32" href="<?= h(url('/assets/icons/favicon-32.png?v=' . $iconVersion)) ?>">
+  <link rel="stylesheet" href="<?= h(url('/assets/styles.css?v=' . $styleVersion)) ?>">
   <style id="brand-theme"><?= branding_css_variables($branding) ?></style>
-  <script defer src="<?= h(url('/assets/app.js?v=' . APP_VERSION)) ?>"></script>
+  <script defer src="<?= h(url('/assets/app.js?v=' . $scriptVersion)) ?>"></script>
 </head>
 <body class="<?= $isKioskStudentSession ? 'kiosk-session' : '' ?>"
       <?= $isKioskStudentSession ? 'data-kiosk-timeout-url="'.h(url('/kiosk.php')).'" data-kiosk-timeout-action="reset_student" data-kiosk-timeout-csrf="'.h(csrf_token()).'" data-kiosk-timeout-ms="45000"' : '' ?>>
@@ -49,7 +52,7 @@ function nav_link(string $href, string $label, string $pathRel, string $extraCla
   <div class="wrap">
     <div class="brand">
       <a class="brandlink" href="<?= h(url($brandTarget)) ?>">
-        <img class="brandlogo" src="<?= h(url((string)$branding['brand_logo'])) ?>" alt="<?= h(((string)$branding['brand_subtitle'] ?: (string)$branding['brand_title']) . ' Logo') ?>">
+        <img class="brandlogo" src="<?= h(url((string)$branding['brand_logo'] . ($branding['brand_logo'] === branding_default_logo() ? '?v=' . APP_ICON_REVISION : ''))) ?>" alt="<?= h(((string)$branding['brand_subtitle'] ?: (string)$branding['brand_title']) . ' Logo') ?>">
         <span class="brandtext">
           <span class="brandtitle"><?= h((string)$branding['brand_title']) ?></span>
           <?php if ((string)$branding['brand_subtitle'] !== ''): ?>
@@ -59,7 +62,7 @@ function nav_link(string $href, string $label, string $pathRel, string $extraCla
       </a>
     </div>
 
-    <button class="burger" type="button" aria-label="Menü" aria-expanded="false" aria-controls="mainnav" data-burger>
+    <button class="burger" type="button" aria-label="Menü öffnen" aria-expanded="false" aria-controls="mainnav" data-burger>
       <span></span><span></span><span></span>
     </button>
 
@@ -83,6 +86,9 @@ function nav_link(string $href, string $label, string $pathRel, string $extraCla
         <?= nav_link('/dashboard.php', 'Dashboard', $pathRel) ?>
         <?= nav_link('/teachers.php', 'Lehrer finden', $pathRel) ?>
         <?= nav_link('/account/password.php', 'Passwort', $pathRel) ?>
+        <?php if (($u['role'] ?? '') === 'teacher'): ?>
+          <?= nav_link('/teacher/timetable.php', 'Stundenplan', $pathRel) ?>
+        <?php endif; ?>
         <?= nav_link('/kiosk.php', 'Kiosk', $pathRel) ?>
         <form method="post" action="<?= h(url('/logout.php')) ?>" class="nav-action">
           <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">

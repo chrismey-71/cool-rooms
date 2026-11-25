@@ -5,9 +5,11 @@ session_start();
 require_once __DIR__ . '/../lib/auth.php';
 require_once __DIR__ . '/../lib/helpers.php';
 require_once __DIR__ . '/../lib/csrf.php';
+require_once __DIR__ . '/../lib/class_groups.php';
 
 $u = require_admin();
 $pdo = db();
+class_groups_schema($pdo);
 
 $createdCredentials = [];
 
@@ -108,7 +110,7 @@ $variants = [
 
       if ($fn==='' || $ln==='' || $username==='' || $class==='') continue;
 
-      $stmt = $pdo->prepare("SELECT id, role FROM users WHERE username=? LIMIT 1 FOR UPDATE");
+      $stmt = $pdo->prepare("SELECT id, role, class_name FROM users WHERE username=? LIMIT 1 FOR UPDATE");
       $stmt->execute([$username]);
       $existing = $stmt->fetch();
 
@@ -118,6 +120,7 @@ $variants = [
         }
         $stmt = $pdo->prepare("UPDATE users SET first_name=?, last_name=?, class_name=?, is_active=1 WHERE id=? AND role='student'");
         $stmt->execute([$fn,$ln,$class,(int)$existing['id']]);
+        if((string)$existing['class_name']!==$class){$stmt=$pdo->prepare('DELETE FROM student_class_groups WHERE student_id=?');$stmt->execute([(int)$existing['id']]);}
       } else {
         $pw = rand_pass();
         $hash = password_hash($pw, PASSWORD_DEFAULT);

@@ -6,6 +6,7 @@ require_once __DIR__ . '/../lib/auth.php';
 require_once __DIR__ . '/../lib/helpers.php';
 require_once __DIR__ . '/../lib/csrf.php';
 require_once __DIR__ . '/../lib/events.php';
+require_once __DIR__ . '/../lib/timetable.php';
 
 $u = require_teacher();
 $pdo = db();
@@ -15,10 +16,17 @@ $classes = $pdo->query("SELECT DISTINCT class_name FROM users WHERE role='studen
 $stmt = $pdo->prepare("SELECT class_name FROM teacher_responsibility WHERE teacher_id=?");
 $stmt->execute([(int)$u['id']]);
 $current = $stmt->fetchColumn() ?: null;
+$timetable=$u['role']==='teacher' ? timetable_load($pdo,(int)$u['id']) : ['enabled'=>false,'events'=>[]];
+$suggestedClass=$timetable['enabled'] ? timetable_targets($pdo,$timetable,timetable_current($timetable))['class'] : '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   csrf_check();
   $class = trim((string)($_POST['class_name'] ?? ''));
+  if($class!=='' && !in_array($class,array_column($classes,'class_name'),true)) {
+    flash_set('error','Bitte eine vorhandene Klasse wählen.');redirect(url('/teacher/set_class.php'));
+  }
+  class_groups_schema($pdo);
+  $stmt=$pdo->prepare('DELETE FROM teacher_class_calendar_selection WHERE teacher_id=?');$stmt->execute([(int)$u['id']]);
   if ($class === '') {
     $stmt = $pdo->prepare("DELETE FROM teacher_responsibility WHERE teacher_id=?");
     $stmt->execute([(int)$u['id']]);
@@ -74,6 +82,7 @@ require __DIR__ . '/../partials/header.php';
 ?>
 <div class="card">
   <h2>Verantwortliche Klasse wählen</h2>
+  <?php if($suggestedClass!==''): ?><p class="flash info">Die aktuelle Stundenplanklasse ist vorausgewählt. Erst „Speichern“ übernimmt sie. Bei gleichzeitig unterschiedlichen Klassen erfolgt keine Vorauswahl.</p><?php endif; ?>
   <?php if ($current): ?>
     <p>Aktuell: <span class="badge"><?= h($current) ?></span></p>
   <?php endif; ?>
@@ -84,7 +93,7 @@ require __DIR__ . '/../partials/header.php';
     <select name="class_name">
       <option value="">-- keine Klasse gewählt --</option>
       <?php foreach ($classes as $c): $cn = $c['class_name']; ?>
-        <option value="<?= h($cn) ?>" <?= $current===$cn ? 'selected' : '' ?>><?= h($cn) ?></option>
+        <option value="<?= h($cn) ?>" <?= ($suggestedClass ?: $current)===$cn ? 'selected' : '' ?>><?= h($cn) ?></option>
       <?php endforeach; ?>
     </select>
     <p style="margin-top:12px;"><button type="submit">Speichern</button></p>

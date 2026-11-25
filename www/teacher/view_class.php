@@ -7,14 +7,21 @@ require_once __DIR__ . '/../lib/helpers.php';
 require_once __DIR__ . '/../lib/csrf.php';
 require_once __DIR__ . '/../lib/events.php';
 require_once __DIR__ . '/../lib/room_assignments.php';
+require_once __DIR__ . '/../lib/class_group_view.php';
 
 $u = require_teacher();
 $pdo = db();
+class_groups_schema($pdo);
 
 $stmt = $pdo->prepare("SELECT class_name FROM teacher_responsibility WHERE teacher_id=?");
 $stmt->execute([(int)$u['id']]);
 $class = $stmt->fetchColumn();
 $classHomeRoom = null;
+$manualGroup=is_string($_GET['group']??null)?$_GET['group']:null;
+try{$view=class_group_view($pdo,$u,(string)$class,$manualGroup);}
+catch(InvalidArgumentException $e){flash_set('error',$e->getMessage());redirect(url('/teacher/view_class.php'));}
+[$groupSql,$groupParams]=class_groups_condition($view['group_ids']);
+$viewUrl=url('/teacher/view_class.php').($view['filter_query']!==''?'?group='.urlencode($view['filter_query']):'');
 
 if ($class) {
   try {
@@ -40,26 +47,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     redirect(url('/teacher/set_class.php'));
   }
 
+  if(!hash_equals($view['token'],(string)($_POST['group_scope']??''))){flash_set('error','Die angezeigte Klasse oder der Stundenplanfilter hat sich geändert. Bitte die Auswahl erneut prüfen.');redirect($viewUrl);}
+
   $action = (string)($_POST['action'] ?? 'reset_assignments');
+  if(!in_array($action,['book_home_room','mark_inactive','mark_active','reset_assignments'],true)){flash_set('error','Unbekannte Aktion.');redirect($viewUrl);}
 
   if ($action === 'book_home_room') {
     if (!$classHomeRoom) {
       flash_set('error', 'Für diese Klasse ist kein aktiver Klassenraum hinterlegt.');
-      redirect(url('/teacher/view_class.php'));
+      redirect($viewUrl);
     }
 
     $roomId = (int)$classHomeRoom['id'];
     $roomName = (string)$classHomeRoom['name'];
 
-    $stmt = $pdo->prepare("SELECT id FROM users WHERE role='student' AND class_name=? AND is_active=1 ORDER BY id");
-    $stmt->execute([$class]);
+    $stmt = $pdo->prepare("SELECT s.id FROM users s WHERE s.role='student' AND s.class_name=? AND s.is_active=1 $groupSql ORDER BY s.id");
+    $stmt->execute(array_merge([$class],$groupParams));
     $studentIds = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
 
     try {
       $affectedStudents = assign_students_to_room($pdo, $studentIds, $roomId);
     } catch (RoomAssignmentCapacityException|InvalidArgumentException $e) {
       flash_set('error', $e->getMessage());
-      redirect(url('/teacher/view_class.php'));
+      redirect($viewUrl);
     }
 
     emit_event('teacher_class_home_room_booking', [
@@ -73,10 +83,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       'room_id' => $roomId,
       'room_name' => $roomName,
       'affected_students' => $affectedStudents,
+      'group_ids' => $view['group_ids'],
+      'group_selection' => $view['label'],
     ]);
 
-    flash_set('success', "$affectedStudents anwesende Schüler:innen wurden in den Klassenraum $roomName gebucht.");
-    redirect(url('/teacher/view_class.php'));
+    flash_set('success', "$affectedStudents anwesende Schüler:innen der angezeigten Auswahl wurden in den Klassenraum $roomName gebucht.");
+    redirect($viewUrl);
   }
 
   if ($action === 'mark_inactive' || $action === 'mark_active') {
@@ -85,16 +97,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $stmt = $pdo->prepare("
       SELECT id, first_name, last_name, username, is_active
-      FROM users
-      WHERE id=? AND role='student' AND class_name=?
+      FROM users s
+      WHERE s.id=? AND s.role='student' AND s.class_name=? $groupSql
       LIMIT 1
     ");
-    $stmt->execute([$studentId, $class]);
+    $stmt->execute(array_merge([$studentId,$class],$groupParams));
     $student = $stmt->fetch() ?: null;
 
     if (!$student) {
-      flash_set('error', 'Schüler:in gehört nicht zu deiner verantwortlichen Klasse.');
-      redirect(url('/teacher/view_class.php'));
+      flash_set('error', 'Schüler:in gehört nicht zur angezeigten Klasse oder Gruppe.');
+      redirect($viewUrl);
     }
 
     $stmt = $pdo->prepare("UPDATE users SET is_active=? WHERE id=? AND role='student' AND class_name=?");
@@ -124,27 +136,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $name = trim((string)$student['first_name'] . ' ' . (string)$student['last_name']);
     flash_set('success', $newActive === 1 ? "$name ist wieder anwesend." : "$name wurde auf nicht anwesend gesetzt.");
-    redirect(url('/teacher/view_class.php'));
+    redirect($viewUrl);
   }
 
   $stmt = $pdo->prepare("
     SELECT COUNT(*)
     FROM room_assignments ra
     JOIN users s ON s.id = ra.student_id
-    WHERE s.role='student' AND s.class_name=?
+    WHERE s.role='student' AND s.class_name=? $groupSql
   ");
-  $stmt->execute([$class]);
+  $stmt->execute(array_merge([$class],$groupParams));
   $deletedAssignments = (int)$stmt->fetchColumn();
 
   $stmt = $pdo->prepare("
     DELETE FROM room_assignments
     WHERE student_id IN (
-      SELECT id
-      FROM users
-      WHERE role='student' AND class_name=?
+      SELECT s.id
+      FROM users s
+      WHERE s.role='student' AND s.class_name=? $groupSql
     )
   ");
-  $stmt->execute([$class]);
+  $stmt->execute(array_merge([$class],$groupParams));
 
   emit_event('teacher_class_assignments_reset', [
     'actor_id' => (int)$u['id'],
@@ -155,6 +167,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     'actor_name' => trim((string)$u['last_name'] . ', ' . (string)$u['first_name']),
     'class_name' => (string)$class,
     'deleted_student_assignments' => $deletedAssignments,
+    'group_ids' => $view['group_ids'],
+    'group_selection' => $view['label'],
   ]);
 
   emit_event('reset', [
@@ -164,10 +178,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   ]);
 
   $msg = $deletedAssignments > 0
-    ? "Raumzuordnungen für Klasse $class gelöscht. $deletedAssignments Einbuchungen entfernt."
-    : "Für Klasse $class gab es keine aktiven Raumzuordnungen mehr.";
+    ? "Raumzuordnungen für $class · {$view['label']} gelöscht. $deletedAssignments Einbuchungen entfernt."
+    : "Für $class · {$view['label']} gab es keine aktiven Raumzuordnungen mehr.";
   flash_set('success', $msg);
-  redirect(url('/teacher/view_class.php'));
+  redirect($viewUrl);
 }
 
 require __DIR__ . '/../partials/header.php';
@@ -185,124 +199,16 @@ exit;
 endif;
 
 $stmt = $pdo->prepare("
-  SELECT s.id, s.first_name, s.last_name, s.username, s.is_active,
+  SELECT s.id, s.first_name, s.last_name, s.is_active,
          r.name AS room_name,
          ra.updated_at
   FROM users s
   LEFT JOIN room_assignments ra ON ra.student_id = s.id
   LEFT JOIN rooms r ON r.id = ra.room_id
-  WHERE s.role='student' AND s.class_name=?
+  WHERE s.role='student' AND s.class_name=? $groupSql
   ORDER BY s.last_name, s.first_name
 ");
-$stmt->execute([$class]);
+$stmt->execute(array_merge([$class],$groupParams));
 $students = $stmt->fetchAll();
-?>
-<div class="card">
-  <h2>Klasse: <?= h($class) ?> <span class="badge ok">Live</span></h2>
-  <p class="small">„nicht eingebucht“ = kein Raum gewählt. Änderungen erscheinen automatisch.</p>
-
-  <div class="card">
-    <h3>Klassenaktionen</h3>
-    <p class="small">Diese Aktionen betreffen immer nur deine verantwortliche Klasse. Nicht anwesende Schüler:innen werden beim Buchen in den Klassenraum übersprungen.</p>
-    <div class="row">
-      <form method="post" onsubmit="return confirm('Alle anwesenden Schüler:innen dieser Klasse in den Klassenraum buchen?')">
-        <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
-        <input type="hidden" name="action" value="book_home_room">
-        <button type="submit" <?= $classHomeRoom ? '' : 'disabled' ?>>Alle in den Klassenraum buchen</button>
-        <p class="small">
-          <?php if ($classHomeRoom): ?>
-            Klassenraum: <?= h((string)$classHomeRoom['name']) ?>
-          <?php else: ?>
-            Kein Klassenraum hinterlegt.
-          <?php endif; ?>
-        </p>
-      </form>
-      <form method="post" onsubmit="return confirm('Wirklich alle Raumzuordnungen dieser Klasse löschen?')">
-        <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
-        <input type="hidden" name="action" value="reset_assignments">
-        <button class="danger" type="submit">Jetzt Raumzuordnungen dieser Klasse löschen</button>
-      </form>
-    </div>
-  </div>
-
-  <table class="table" id="class-table">
-    <thead><tr><th>Nr.</th><th>Name</th><th>Username</th><th>Anwesenheit</th><th>Raum</th><th>Stand</th><th>Aktion</th></tr></thead>
-    <tbody>
-      <?php foreach ($students as $i => $s): ?>
-        <tr data-student-id="<?= (int)$s['id'] ?>">
-          <td data-label="Nr."><?= $i + 1 ?></td>
-          <td data-label="Name"><?= h($s['last_name'] . ', ' . $s['first_name']) ?></td>
-          <td data-label="Username"><?= h($s['username']) ?></td>
-          <td data-label="Anwesenheit">
-            <?php if ((int)($s['is_active'] ?? 1) === 1): ?>
-              <span class="badge ok">anwesend</span>
-            <?php else: ?>
-              <span class="badge warn">nicht anwesend</span>
-            <?php endif; ?>
-          </td>
-          <td class="room-cell" data-label="Raum">
-            <?php if ($s['room_name']): ?>
-              <span class="badge ok"><?= h($s['room_name']) ?></span>
-            <?php else: ?>
-              <span class="badge warn">nicht eingebucht</span>
-            <?php endif; ?>
-          </td>
-          <td class="ts-cell small" data-label="Stand"><?= h($s['updated_at'] ?? '') ?></td>
-          <td data-label="Aktion">
-            <form method="post" style="display:inline">
-              <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
-              <input type="hidden" name="student_id" value="<?= (int)$s['id'] ?>">
-              <?php if ((int)($s['is_active'] ?? 1) === 1): ?>
-                <button class="small class-status-action class-status-action--inactive" type="submit" name="action" value="mark_inactive">Nicht anwesend setzen</button>
-              <?php else: ?>
-                <button class="small class-status-action class-status-action--active" type="submit" name="action" value="mark_active">Anwesend setzen</button>
-              <?php endif; ?>
-            </form>
-          </td>
-        </tr>
-      <?php endforeach; ?>
-    </tbody>
-  </table>
-</div>
-
-<script>
-(() => {
-  const CLASS_NAME = <?= json_encode($class, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
-  const streamUrl = <?= json_encode(url('/stream.php?scope=class&class=' . urlencode($class))) ?>;
-
-  const es = new EventSource(streamUrl);
-
-  es.addEventListener('assignment', (ev) => {
-    let p;
-    try { p = JSON.parse(ev.data); } catch { return; }
-    if (!p || p.class_name !== CLASS_NAME) return;
-
-    const studentId = Number.parseInt(String(p.student_id), 10);
-    if (!Number.isInteger(studentId) || studentId < 1) return;
-    const tr = document.querySelector(`tr[data-student-id="${studentId}"]`);
-    if (!tr) return;
-
-    const roomCell = tr.querySelector('.room-cell');
-    const tsCell = tr.querySelector('.ts-cell');
-
-    if (roomCell) {
-      roomCell.innerHTML = p.room_name
-        ? `<span class="badge ok">${escapeHtml(p.room_name)}</span>`
-        : `<span class="badge warn">nicht eingebucht</span>`;
-    }
-    if (tsCell) tsCell.textContent = p.updated_at || '';
-  });
-
-  es.addEventListener('teacher_class_home_room_booking', () => location.reload());
-  es.addEventListener('teacher_student_active_change', () => location.reload());
-  es.addEventListener('reset', () => location.reload());
-  es.onerror = () => {}; // browser reconnects automatically
-  window.addEventListener('pagehide', () => es.close(), { once: true });
-
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
-})();
-</script>
-
-<?php require __DIR__ . '/../partials/footer.php'; ?>
+require __DIR__.'/../partials/class_roster.php';
+require __DIR__.'/../partials/footer.php';

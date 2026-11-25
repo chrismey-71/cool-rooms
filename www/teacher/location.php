@@ -7,6 +7,7 @@ require_once __DIR__ . '/../lib/helpers.php';
 require_once __DIR__ . '/../lib/csrf.php';
 require_once __DIR__ . '/../lib/events.php';
 require_once __DIR__ . '/../lib/room_groups.php';
+require_once __DIR__ . '/../lib/timetable.php';
 
 $u = require_teacher();
 $pdo = db();
@@ -124,11 +125,14 @@ $stmt->execute([(int)$u['id']]);
 $current = $stmt->fetch() ?: null;
 
 $responsibleClass = teacher_responsible_class($pdo, (int)$u['id']);
+$timetable=$u['role']==='teacher' ? timetable_load($pdo,(int)$u['id']) : ['enabled'=>false,'events'=>[]];
+$suggestedRoom=$timetable['enabled'] ? timetable_targets($pdo,$timetable,timetable_current($timetable))['room'] : 0;
 
 require __DIR__ . '/../partials/header.php';
 ?>
 <div class="card">
   <h2>Mein Raum</h2>
+  <?php if($suggestedRoom): ?><p class="flash info">Der aktuelle Stundenplanraum ist vorausgewählt. Erst „Speichern“ übernimmt ihn. Du kannst einen anderen Raum wählen.</p><?php endif; ?>
   <p class="small">Damit können Schüler:innen und Lehrkräfte sehen, wo du gerade bist. „Lehrerzimmer“ ist nur für Lehrkräfte auswählbar.</p>
 
   <div class="card">
@@ -203,7 +207,7 @@ require __DIR__ . '/../partials/header.php';
               $label .= ' (nur Lehrer:innen)';
             }
           ?>
-          <option value="<?= (int)$r['id'] ?>" <?= $current && (int)$current['id']===(int)$r['id'] ? 'selected' : '' ?>>
+          <option value="<?= (int)$r['id'] ?>" <?= ($suggestedRoom ?: (int)($current['id'] ?? 0))===(int)$r['id'] ? 'selected' : '' ?>>
             <?= h($label) ?>
           </option>
         <?php endforeach; ?>

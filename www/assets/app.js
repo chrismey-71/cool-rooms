@@ -58,18 +58,39 @@
     var btn = document.querySelector('[data-burger]');
     var nav = document.getElementById('mainnav');
     if (btn && nav){
-      btn.addEventListener('click', function(){
-        var open = nav.classList.toggle('is-open');
+      var setMenuOpen = function(open, returnFocus){
+        nav.classList.toggle('is-open', open);
         btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        btn.setAttribute('aria-label', open ? 'Menü schließen' : 'Menü öffnen');
+        if (returnFocus) btn.focus();
+      };
+      btn.addEventListener('click', function(){
+        setMenuOpen(!nav.classList.contains('is-open'));
       });
 
       // Close on outside click (mobile)
       document.addEventListener('click', function(e){
         if (!nav.classList.contains('is-open')) return;
         if (nav.contains(e.target) || btn.contains(e.target)) return;
-        nav.classList.remove('is-open');
-        btn.setAttribute('aria-expanded', 'false');
+        setMenuOpen(false);
       });
+      document.addEventListener('keydown', function(e){
+        if (e.key === 'Escape' && nav.classList.contains('is-open')) {
+          setMenuOpen(false, true);
+        }
+      });
+      document.addEventListener('focusin', function(e){
+        if (nav.classList.contains('is-open') && !nav.contains(e.target) && !btn.contains(e.target)) {
+          setMenuOpen(false);
+        }
+      });
+      nav.addEventListener('click', function(e){
+        if (e.target.closest('a, button[type="submit"]')) setMenuOpen(false);
+      });
+      // A closed mobile menu must not remain open after a breakpoint change.
+      var mobileMenu = window.matchMedia('(max-width: 720px)');
+      if (mobileMenu.addEventListener) mobileMenu.addEventListener('change', function(){ setMenuOpen(false); });
+      else if (mobileMenu.addListener) mobileMenu.addListener(function(){ setMenuOpen(false); });
     }
 
     // Tables -> mobile card labels (generic)

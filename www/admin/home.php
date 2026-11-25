@@ -56,8 +56,8 @@ require __DIR__ . '/../partials/header.php';
         <div class="card admin-tile admin-tile--classes">
           <span class="admin-tile__tag">Klasse</span>
           <h4>Klassen</h4>
-          <p><a href="<?= h(url('/admin/classes.php')) ?>">Umbenennen &amp; Klassenraum setzen</a></p>
-          <p class="small">Für Schuljahreswechsel, Klassenräume und das Entfernen ausgeschiedener Klassen.</p>
+          <p><a href="<?= h(url('/admin/classes.php')) ?>">Klassen, Gruppen &amp; Klassenräume verwalten</a></p>
+          <p class="small">Für Schuljahreswechsel, Gruppenzuordnungen und das Entfernen ausgeschiedener Klassen.</p>
         </div>
 
         <div class="card admin-tile admin-tile--classes">
@@ -89,6 +89,15 @@ require __DIR__ . '/../partials/header.php';
           <h4>Lehrer:innen</h4>
           <p><a href="<?= h(url('/admin/teachers.php')) ?>">Verwalten</a></p>
           <p class="small">Zugänge, Verantwortlichkeiten und Lehrkräfte-Daten pflegen.</p>
+        </div>
+
+        <div class="card admin-tile admin-tile--ops">
+          <span class="admin-tile__tag">Zuordnung</span>
+          <h4>WebUntis-Kürzel zuordnen</h4>
+          <p><a href="<?= h(url('/admin/webuntis.php#rooms')) ?>">Räume zuordnen</a></p>
+          <p><a href="<?= h(url('/admin/webuntis.php#classes')) ?>">Klassen zuordnen</a></p>
+          <p><a href="<?= h(url('/admin/webuntis.php#teachers')) ?>">Lehrer:innen zuordnen</a></p>
+          <p class="small">Zentrale Kürzel für alle persönlichen Stundenpläne pflegen.</p>
         </div>
 
         <div class="card admin-tile admin-tile--ops">

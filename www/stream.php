@@ -4,6 +4,7 @@ session_start();
 
 require_once __DIR__ . '/lib/auth.php';
 require_once __DIR__ . '/lib/db.php';
+require_once __DIR__ . '/lib/class_group_view.php';
 
 $u = require_teacher();
 $pdo = db();
@@ -51,6 +52,19 @@ if (!is_admin_user($u)) {
       echo 'Raum nicht gefunden.';
       exit;
     }
+  }
+}
+
+// Apply the same roster scope as the HTML view, not just client-side row hiding.
+$groupStudentIds=null;
+if($scope==='class'){
+  class_groups_schema($pdo);
+  try{$groupView=class_group_view($pdo,$u,$scopeClass,is_string($_GET['group']??null)?$_GET['group']:null);}
+  catch(InvalidArgumentException $e){http_response_code(400);exit('Ungültiger Gruppenfilter.');}
+  if($groupView['group_ids']){
+    [$groupSql,$groupParams]=class_groups_condition($groupView['group_ids']);
+    $st=$pdo->prepare("SELECT s.id FROM users s WHERE s.role='student' AND s.class_name=? $groupSql");$st->execute(array_merge([$scopeClass],$groupParams));
+    $groupStudentIds=array_fill_keys(array_map('intval',$st->fetchAll(PDO::FETCH_COLUMN)),true);
   }
 }
 
@@ -110,6 +124,7 @@ while (time() < $end) {
           } elseif (($p['class_name'] ?? '') !== $scopeClass) {
             continue;
           } elseif ($r['type'] === 'assignment') {
+            if($groupStudentIds!==null && !isset($groupStudentIds[(int)($p['student_id']??0)]))continue;
             $payload = json_encode([
               'student_id' => (int)($p['student_id'] ?? 0),
               'class_name' => (string)($p['class_name'] ?? ''),
@@ -129,6 +144,12 @@ while (time() < $end) {
             $payload = '{}';
           }
         }
+      }
+
+      // Admins viewing a filtered class also receive only that group's assignments.
+      if($scope==='class' && $r['type']==='assignment' && $groupStudentIds!==null){
+        $groupPayload=json_decode($payload,true)?:[];
+        if(!isset($groupStudentIds[(int)($groupPayload['student_id']??0)]))continue;
       }
 
       echo "id: {$r['id']}\n";

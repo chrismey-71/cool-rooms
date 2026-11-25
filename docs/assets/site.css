@@ -76,6 +76,10 @@ h1 { margin: 0 0 18px; font-size: clamp(2.1rem, 3.8vw, 3.1rem); line-height: 1.1
 .feature { padding: 16px; border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 7px; background: var(--surface); }
 .feature h3 { margin: 0 0 6px; font-size: 1rem; line-height: 1.35; }
 .feature p { margin: 0; color: var(--muted); font-size: .92rem; }
+.release-section{margin-top:26px;padding:24px;border:1px solid var(--line-strong);border-radius:8px;background:linear-gradient(135deg,var(--surface-soft),var(--surface))}
+.release-section .section-header{margin-bottom:16px}
+.release-section .feature-list{margin:0}
+.release-links{margin:18px 0 0;font-size:.9rem;color:var(--muted)}
 .section-header .screenshot-hint { margin-top: 10px; font-size: .87rem; }
 .screenshot-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; }
 .screenshot-card { margin: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }

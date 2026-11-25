@@ -6,6 +6,7 @@ require_once __DIR__ . '/lib/version.php';
 require_once __DIR__ . '/lib/branding.php';
 
 $branding = branding_settings();
+$iconVersion = APP_VERSION . '-' . APP_ICON_REVISION;
 $appName = (string)$branding['brand_title'];
 $nameLength = function_exists('mb_strlen') ? mb_strlen($appName, 'UTF-8') : strlen($appName);
 $shortName = $nameLength > 18 ? mb_substr($appName, 0, 18, 'UTF-8') : $appName;
@@ -27,19 +28,19 @@ echo json_encode([
   'theme_color' => $branding['theme_primary'],
   'icons' => [
     [
-      'src' => url('/assets/icons/icon-192.png?v=' . APP_VERSION),
+      'src' => url('/assets/icons/icon-192.png?v=' . $iconVersion),
       'sizes' => '192x192',
       'type' => 'image/png',
       'purpose' => 'any',
     ],
     [
-      'src' => url('/assets/icons/icon-512.png?v=' . APP_VERSION),
+      'src' => url('/assets/icons/icon-512.png?v=' . $iconVersion),
       'sizes' => '512x512',
       'type' => 'image/png',
       'purpose' => 'any',
     ],
     [
-      'src' => url('/assets/icons/icon-512-maskable.png?v=' . APP_VERSION),
+      'src' => url('/assets/icons/icon-512-maskable.png?v=' . $iconVersion),
       'sizes' => '512x512',
       'type' => 'image/png',
       'purpose' => 'maskable',

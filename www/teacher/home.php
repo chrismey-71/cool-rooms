@@ -4,9 +4,17 @@ session_start();
 require_once __DIR__ . '/../lib/auth.php';
 require_once __DIR__ . '/../lib/helpers.php';
 require_once __DIR__ . '/../lib/kiosk_access.php';
+require_once __DIR__ . '/../lib/timetable.php';
 
 $u = require_teacher();
+if ($u['role'] !== 'teacher') redirect(url('/admin/home.php'));
 $pdo = db();
+$timetable=timetable_load($pdo,(int)$u['id']);
+$previewDate=is_string($_GET['timetable_date'] ?? null)?$_GET['timetable_date']:'';
+$previewOffset=filter_var($_GET['timetable_offset'] ?? null,FILTER_VALIDATE_INT,['options'=>['min_range'=>0,'max_range'=>2000]]);
+$preview=timetable_preview($timetable,$previewDate,$previewOffset===false?null:$previewOffset);
+$upcoming=$preview['events'];
+$previewUrl=fn(string $date,?int $offset=null)=>url('/teacher/home.php').'?'.http_build_query(array_filter(['timetable_date'=>$date,'timetable_offset'=>$offset],fn($v)=>$v!==null)).'#timetable';
 
 $stmt = $pdo->prepare("
   SELECT r.name
@@ -60,6 +68,34 @@ require __DIR__ . '/../partials/header.php';
 ?>
 <div class="card teacher-dashboard">
   <h2>Lehrerbereich</h2>
+  <?php if(timetable_has_import($timetable)): ?>
+  <section class="card timetable-preview" id="timetable" aria-label="Mein Stundenplan">
+    <div class="timetable-preview__heading"><h3>Mein Stundenplan</h3><a href="<?= h(url('/teacher/timetable.php')) ?>">Alle Termine &amp; Einstellungen</a></div>
+    <div class="timetable-preview__navigation">
+      <nav class="timetable-preview__day" aria-label="Stundenplantag">
+        <a href="<?= h($previewUrl($preview['date']->modify('-1 day')->format('Y-m-d'))) ?>" aria-label="Vorheriger Tag" title="Vorheriger Tag">&lsaquo;</a>
+        <strong><?= h($preview['date']->format('d.m.Y')) ?></strong>
+        <a href="<?= h($previewUrl($preview['date']->modify('+1 day')->format('Y-m-d'))) ?>" aria-label="Nächster Tag" title="Nächster Tag">&rsaquo;</a>
+        <a class="timetable-preview__today" href="<?= h(url('/teacher/home.php').'#timetable') ?>">Heute</a>
+      </nav>
+      <?php if($preview['total']): ?><nav class="timetable-preview__paging" aria-label="Stunden des Tages">
+        <?php if($preview['previous']!==null): ?><a href="<?= h($previewUrl($preview['date']->format('Y-m-d'),$preview['previous'])) ?>" aria-label="Frühere Stunde anzeigen" title="Frühere Stunde anzeigen">&lsaquo;</a><?php else: ?><span class="timetable-preview__disabled" aria-hidden="true">&lsaquo;</span><?php endif; ?>
+        <span><?= $preview['offset']+1 ?>–<?= min($preview['offset']+3,$preview['total']) ?> von <?= $preview['total'] ?></span>
+        <?php if($preview['next']!==null): ?><a href="<?= h($previewUrl($preview['date']->format('Y-m-d'),$preview['next'])) ?>" aria-label="Spätere Stunde anzeigen" title="Spätere Stunde anzeigen">&rsaquo;</a><?php else: ?><span class="timetable-preview__disabled" aria-hidden="true">&rsaquo;</span><?php endif; ?>
+      </nav><?php endif; ?>
+    </div>
+    <?php if($upcoming): ?>
+    <div class="timetable-preview__tiles">
+      <?php foreach($upcoming as $event): $data=$timetable; require __DIR__.'/../partials/timetable_actions.php'; endforeach; ?>
+    </div>
+    <?php else: ?><p class="small">Keine importierten Termine für diesen Tag.</p><?php endif; ?>
+  </section>
+  <?php else: ?>
+  <section class="timetable-intro" aria-label="Mein Stundenplan einrichten">
+    <div><h3>Mein Stundenplan</h3><p>Noch kein Import</p></div>
+    <a href="<?= h(url('/teacher/timetable.php')) ?>" aria-label="WebUntis-Kalender importieren">Importieren <span aria-hidden="true">&rsaquo;</span></a>
+  </section>
+  <?php endif; ?>
   <div class="teacher-current-selection" aria-label="Aktuelle Auswahl">
     <span><strong>Mein Raum:</strong> <?= h($currentRoom !== '' ? $currentRoom : 'nicht eingebucht') ?></span>
     <span><strong>Verantwortliche Klasse:</strong> <?= h($responsibleClass !== '' ? $responsibleClass : 'keine Klasse gewählt') ?></span>

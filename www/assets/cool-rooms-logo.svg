@@ -1,13 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
   <title id="title">COOL Rooms</title>
-  <desc id="desc">Raum-Markierung als neutrales Logo der COOL-Rooms-App</desc>
-  <rect width="128" height="128" rx="26" fill="#478E4F"/>
-  <circle cx="25" cy="24" r="15" fill="#91A17C" opacity=".72"/>
-  <circle cx="103" cy="27" r="19" fill="#79B486" opacity=".62"/>
-  <ellipse cx="64" cy="106" rx="47" ry="15" fill="#72AA7D" opacity=".58"/>
-  <path d="M64 22c-22 0-40 17.5-40 39.3 0 28.6 40 61.7 40 61.7s40-33.1 40-61.7C104 39.5 86 22 64 22Z" fill="#fff"/>
-  <path d="M43 75V49h43v33H60" fill="none" stroke="#2F6F3A" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M43 82h12" fill="none" stroke="#2F6F3A" stroke-width="8" stroke-linecap="round"/>
-  <path d="M64 49v18" fill="none" stroke="#2F6F3A" stroke-width="8" stroke-linecap="round"/>
-  <circle cx="75" cy="68" r="6" fill="#F7A1A5"/>
+  <desc id="desc">Weiße Standort-Stecknadel auf einem ruhigen grünen Verlauf. CR-Raumkonturen mit offenem Zugang und korallfarbenem Standortpunkt.</desc>
+  <defs>
+    <linearGradient id="background" x1="8" y1="0" x2="118" y2="128" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#397C59"/>
+      <stop offset="1" stop-color="#174C3D"/>
+    </linearGradient>
+    <clipPath id="tile"><rect width="128" height="128" rx="28"/></clipPath>
+  </defs>
+  <g clip-path="url(#tile)">
+    <rect width="128" height="128" fill="url(#background)"/>
+    <circle cx="16" cy="8" r="52" fill="#D5EDC3" opacity=".07"/>
+    <circle cx="124" cy="122" r="56" fill="#082C29" opacity=".1"/>
+  </g>
+  <path d="M64 109c-1.3 0-2.6-.5-3.6-1.4C52.4 100 30 77.8 30 57a34 34 0 1 1 68 0c0 20.8-22.4 43-30.4 50.6-1 .9-2.3 1.4-3.6 1.4Z" fill="#F8FBF7"/>
+  <g fill="none" stroke="#255541" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M55 50v-3a3 3 0 0 0-3-3h-9a3 3 0 0 0-3 3v23a3 3 0 0 0 3 3h9a3 3 0 0 0 3-3v-4"/>
+    <path d="M65 73V44h16a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H65m11 2 10 11"/>
+  </g>
+  <circle cx="47.5" cy="58.5" r="3.7" fill="#E77D68"/>
 </svg>

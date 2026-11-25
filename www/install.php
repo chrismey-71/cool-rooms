@@ -506,6 +506,9 @@ $pdo->exec("
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
       ");
 
+      require_once __DIR__.'/lib/class_groups.php';
+      class_groups_schema($pdo);
+
       if (!$resumeCommittedInstall) {
         // Keep all data rows transactional after the schema has been prepared.
         $pdo->beginTransaction();

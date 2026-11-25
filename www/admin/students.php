@@ -6,10 +6,12 @@ require_once __DIR__ . '/../lib/auth.php';
 require_once __DIR__ . '/../lib/helpers.php';
 require_once __DIR__ . '/../lib/csrf.php';
 require_once __DIR__ . '/../lib/events.php';
+require_once __DIR__ . '/../lib/class_groups.php';
 
 $u = require_admin();
 
 $pdo = db();
+class_groups_schema($pdo);
 
 $classFilter = trim((string)($_GET['class'] ?? ''));
 
@@ -118,6 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim((string)($_POST['username'] ?? ''));
     $class = trim((string)($_POST['class_name'] ?? ''));
     $pass = (string)($_POST['password'] ?? '');
+    $groupId=(int)($_POST['group_id']??0);
 
     if ($fn==='' || $ln==='' || $username==='' || $class==='') {
       flash_set('error', 'Bitte alle Felder (außer Passwort) ausfüllen.');
@@ -129,11 +132,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     redirect(url('/admin/students.php' . qs()));
   }
 
+    ensure_events_schema($pdo);
+    try {
+    $pdo->beginTransaction();
+    $savedStudentId=$id;
     if ($id > 0) {
       // Load old values for audit
       $stmtOld = $pdo->prepare("SELECT first_name,last_name,username,class_name FROM users WHERE id=? AND role='student' LIMIT 1");
       $stmtOld->execute([$id]);
       $old = $stmtOld->fetch() ?: null;
+      if(!$old)throw new InvalidArgumentException('Schüler:in nicht gefunden.');
 
       if ($pass !== '') {
         $hash = password_hash($pass, PASSWORD_DEFAULT);
@@ -172,6 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $hash = password_hash($pass, PASSWORD_DEFAULT);
       $stmt = $pdo->prepare("INSERT INTO users (role, first_name, last_name, username, password_hash, class_name) VALUES ('student',?,?,?,?,?)");
       $stmt->execute([$fn,$ln,$username,$hash,$class]);
+      $savedStudentId=(int)$pdo->lastInsertId();
 
       emit_event('admin_student_created', [
         'actor_id' => (int)$u['id'],
@@ -196,6 +205,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       ]);
       flash_set('success', "Schüler:in angelegt. Passwort: $pass");
     }
+    class_groups_assign($pdo,$savedStudentId,$groupId);
+    foreach(array_unique([$class,(string)($old['class_name']??$class)]) as $changedClass){
+      emit_event('class_groups_changed',['actor_id'=>(int)$u['id'],'actor_role'=>'admin','class_name'=>$changedClass]);
+    }
+    $pdo->commit();
+    }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();flash_set('error',$e instanceof InvalidArgumentException?$e->getMessage():'Speichern nicht möglich. Username und Gruppenzuordnung prüfen.');}
     redirect(url('/admin/students.php' . qs()));
   }
 
@@ -289,12 +304,15 @@ if ($action === 'class_set_active') {
 }
 
 $edit = null;
+$studentGroups=class_groups_list($pdo);
 if (isset($_GET['edit'])) {
   $id = (int)$_GET['edit'];
   $stmt = $pdo->prepare("SELECT * FROM users WHERE id=? AND role='student'");
   $stmt->execute([$id]);
   $edit = $stmt->fetch() ?: null;
 }
+$editGroup=$edit?class_groups_student_group($pdo,(int)$edit['id']):0;
+$groupNameSql="(SELECT g.name FROM student_class_groups m JOIN class_groups g ON g.id=m.group_id WHERE m.student_id=users.id AND g.class_name=users.class_name LIMIT 1) AS group_name";
 
 $dirSql = $dir === 'desc' ? 'DESC' : 'ASC';
 $orderSql = match ($sort) {
@@ -313,12 +331,12 @@ $orderSql = match ($sort) {
 };
 
 if ($classFilter !== '') {
-  $sql = "SELECT id, first_name, last_name, username, class_name, is_active, must_change_password FROM users WHERE role='student' AND class_name=? ORDER BY " . $orderSql;
+  $sql = "SELECT id, first_name, last_name, username, class_name, is_active, must_change_password, $groupNameSql FROM users WHERE role='student' AND class_name=? ORDER BY " . $orderSql;
   $stmt = $pdo->prepare($sql);
   $stmt->execute([$classFilter]);
   $rows = $stmt->fetchAll();
 } else {
-  $sql = "SELECT id, first_name, last_name, username, class_name, is_active, must_change_password FROM users WHERE role='student' ORDER BY " . $orderSql;
+  $sql = "SELECT id, first_name, last_name, username, class_name, is_active, must_change_password, $groupNameSql FROM users WHERE role='student' ORDER BY " . $orderSql;
   $stmt = $pdo->prepare($sql);
   $stmt->execute();
   $rows = $stmt->fetchAll();
@@ -401,6 +419,7 @@ require __DIR__ . '/../partials/header.php';
       </div>
       <div class="row">
         <div><label>Passwort (leer = unverändert / Neu = Auto)</label><input name="password" value=""></div>
+        <div><label for="student-group">Gruppe innerhalb der Klasse</label><select id="student-group" name="group_id"><option value="0">Ohne Gruppe</option><?php foreach($studentGroups as $g): ?><option value="<?= (int)$g['id'] ?>" <?= $editGroup===(int)$g['id']?'selected':'' ?>><?= h($g['class_name'].' · '.$g['name']) ?></option><?php endforeach; ?></select><p class="small">Die Gruppe muss zur eingetragenen Klasse gehören. Bei Klassenwechsel bitte neu wählen oder „Ohne Gruppe“ verwenden.</p></div>
       </div>
 
       <p style="margin-top:12px;"><button type="submit">Speichern</button></p>
@@ -430,7 +449,7 @@ require __DIR__ . '/../partials/header.php';
           <td data-label="Nr."><?= $i + 1 ?></td>
           <td><?= h($r['class_name']) ?></td>
           <td><?= h($r['last_name']) ?></td>
-          <td><?= h($r['first_name']) ?></td>
+          <td><?= h($r['first_name']) ?><div class="small">Gruppe: <?= h($r['group_name']??'ohne') ?> · <a href="<?= h(url('/admin/class_groups.php?class='.urlencode($r['class_name']).'#student-'.(int)$r['id'])) ?>">Zuordnen</a></div></td>
           <td><?= h($r['username']) ?></td>
 
           <td>

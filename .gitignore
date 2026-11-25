@@ -35,3 +35,4 @@ __MACOSX/
 Thumbs.db
 .idea/
 .vscode/
+cron/.sync_timetables.lock

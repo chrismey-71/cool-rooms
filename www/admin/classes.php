@@ -7,6 +7,7 @@ require_once __DIR__ . '/../lib/helpers.php';
 require_once __DIR__ . '/../lib/csrf.php';
 require_once __DIR__ . '/../lib/events.php';
 require_once __DIR__ . '/../lib/room_groups.php';
+require_once __DIR__ . '/../lib/class_groups.php';
 
 $u = require_admin();
 $pdo = db();
@@ -33,6 +34,8 @@ function class_name_exists(PDO $pdo, string $className): bool {
       SELECT class_name FROM kiosk_class_codes
       UNION
       SELECT class_name FROM class_settings
+      UNION
+      SELECT class_name FROM class_groups
     ) AS classes
     WHERE class_name = ?
     LIMIT 1
@@ -43,6 +46,7 @@ function class_name_exists(PDO $pdo, string $className): bool {
 
 ensure_class_settings_table($pdo);
 ensure_room_group_schema($pdo);
+class_groups_schema($pdo);
 
 $rooms = $pdo->query("
   SELECT r.id, r.name
@@ -98,6 +102,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $stmt = $pdo->prepare("DELETE FROM class_settings WHERE class_name=?");
       $stmt->execute([$oldClass]);
 
+      $stmt = $pdo->prepare('DELETE FROM class_groups WHERE class_name=?');
+      $stmt->execute([$oldClass]);
+
       $pdo->commit();
     } catch (Throwable $e) {
       if ($pdo->inTransaction()) {
@@ -120,6 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       'removed_teacher_responsibilities' => $affectedTeacherResponsibilities,
       'deleted_kiosk_codes' => $deletedKioskCodes,
     ]);
+    emit_event('class_groups_changed',['actor_id'=>(int)$u['id'],'actor_role'=>'admin','class_name'=>$oldClass]);
 
     flash_set(
       'success',
@@ -177,6 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       $stmt = $pdo->prepare("UPDATE class_settings SET class_name=? WHERE class_name=?");
       $stmt->execute([$newClass, $oldClass]);
+      class_groups_rename_class($pdo,$oldClass,$newClass);
     }
 
     $stmt = $pdo->prepare("
@@ -218,6 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     : 'Klassenraum entfernt';
 
   flash_set('success', implode(' · ', $parts));
+  if($newClass!==$oldClass)emit_event('class_groups_changed',['actor_id'=>(int)$u['id'],'actor_role'=>'admin','class_name'=>$oldClass]);
   redirect(url('/admin/classes.php'));
 }
 
@@ -235,6 +245,8 @@ $classes = $pdo->query("
     SELECT class_name FROM kiosk_class_codes
     UNION
     SELECT class_name FROM class_settings
+    UNION
+    SELECT class_name FROM class_groups
   ) AS c
   LEFT JOIN class_settings cs ON cs.class_name = c.class_name
   LEFT JOIN rooms r ON r.id = cs.home_room_id
@@ -268,6 +280,7 @@ require __DIR__ . '/../partials/header.php';
           <tr>
             <td>
               <strong><?= h((string)$row['class_name']) ?></strong>
+              <div><a href="<?= h(url('/admin/class_groups.php?class='.urlencode((string)$row['class_name']))) ?>">Gruppen &amp; Schüler:innen zuordnen</a></div>
               <?php if (!empty($row['home_room_name'])): ?>
                 <div class="small">Aktueller Klassenraum: <?= h((string)$row['home_room_name']) ?></div>
               <?php endif; ?>
